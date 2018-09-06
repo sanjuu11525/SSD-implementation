@@ -1,13 +1,17 @@
 # SSD PyTorch Implementation
-The main task of this repo is to reimplement SSD detector with PyTorch. Actually, the reader could find out many repos having the same purpose and even providing command-line supports for the task configuration. However, from the author's perspective, parts of the implementation could not be understood easily because of inconsistent coding styles by contributors. Moreover, the flexibility of python somehow is abused, then very confusing especially in operating diemnsions of tensor. In this repo, the straightforward implementation with documentation is done carefully. Without augumented data the evaluation with Pascal 2007 is 65%, which is consistent with the published. More content will be added in the future.
+The main task of this repo is to reimplement SSD detector with PyTorch. Actually, the reader could find out many having the same purpose and even providing command-line supports for the task configuration. However, from the author's perspective, parts of the implementation could not be understood easily because of inconsistent coding styles by contributors. Moreover, the flexibility of python is sometime abused. The author has been very confused when dealing with redundant diemnsion manipulation of tensor. In this repo, the straightforward implementation with documentation is done carefully. Sharing the experience is the main purpose. If something incorrect, please send me messages by email.
+
+Regarding the evaluation, without augmented data the evaluation with Pascal 2007 is 65%, which is consistent with the published. More content will be added in the future.
 
 ## Dependencies
 PyTorch v0.4.0
 
-OpenCV
+OpenCV for image io
+## Training set
+Pascal 2007+2012 trainval
 
 ## Pascal 2007 eval
-The training consists of two parts. Because of lacking hardware resource, the pretraining of VGG model is used. Respect to [1], the reader can download the model and makes a try. The second part is train the extra layers and tun weights. 
+The training consists of two parts. Because of lacking hardware resource, the pretraining of VGG model is used. Respect to [1], the reader can download the model and make a try. The second part is to train the extra layers and tun weights. The evaluation without augmented is below.
 
 |mAP|aeroplane|bicycle|bird|boat|bottle|bus|car|cat|chair|cow|diningtable|dog|horse|motorbike|person|pottedplant|sheep|sofa|train|tvmonitor|
 |--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
