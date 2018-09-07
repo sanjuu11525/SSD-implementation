@@ -11,7 +11,7 @@ OpenCV for image io
 Jupytor Notebook for demo
 
 ## Demonstration
-demo.ipynb provides a slim demonstration for traiing and evaluation tasks. 
+demo.ipynb provides a slim demonstration for training and evaluation tasks. 
 
 ## Training set
 Pascal 2007+2012 trainval
