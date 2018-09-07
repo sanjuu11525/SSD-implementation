@@ -20,4 +20,4 @@ The training consists of two parts. Because of lacking hardware resource, the pr
 ## Reference
 [1]https://github.com/amdegroot/ssd.pytorch
 
-[2]https://github.com/pytorch/vision#models
+[2]https://github.com/kuangliu/torchcv
