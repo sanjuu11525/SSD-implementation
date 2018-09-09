@@ -3,7 +3,6 @@ import sys
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import torch
 from config import VOC_CLASSES_LABEL_TO_ID
 from config import VOC_CLASSES_ID_TO_LABEL
 
@@ -12,12 +11,6 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
     
-class AugmentationPip():
-    def __init__(self):
-        pass
-    def __call__(self):
-        pass
-    
 class VOCDataBase():
     def __init__(self, parameter):
         
@@ -25,7 +18,6 @@ class VOCDataBase():
         image_set = parameter['image_set']
         self.transform = parameter['transforms']
         self.keep_difficult = parameter['keep_difficult']
-        self.mean = np.array(parameter['mean'])
         year = parameter['year']
         
         self.ids = []
@@ -76,7 +68,7 @@ class VOCDataBase():
         img = cv2.imread(self._imgpath % image_id, cv2.IMREAD_COLOR)
         
         return img
-    def pull_annotation(self, image_id, w, h):
+    def pull_annotation(self, image_id):
         """Pull annotation and normalized by image size.
         Arguments:
           image_id: scalar.
@@ -93,14 +85,6 @@ class VOCDataBase():
         gt_id = []
         num_obj = len(ground_truth)
         for the_ith_obj in range(num_obj):
-             # normalize xmin
-            ground_truth[the_ith_obj][0] = ground_truth[the_ith_obj][0]/float(w)
-             # normalize xmax
-            ground_truth[the_ith_obj][2] = ground_truth[the_ith_obj][2]/float(w)
-             # normalize ymin
-            ground_truth[the_ith_obj][1] = ground_truth[the_ith_obj][1]/float(h)
-             # normalize ymax
-            ground_truth[the_ith_obj][3] = ground_truth[the_ith_obj][3]/float(h)
             gt_box.append(ground_truth[the_ith_obj][:-1])
             gt_id.append(ground_truth[the_ith_obj][-1])
             
@@ -111,21 +95,16 @@ class VOCDataBase():
         Arguments:
           index: scalar.
         Return:
-          1) img:    (torch) image, size [3, 300, 300].
+          1) img:    (torch) image, sized [3, 300, 300].
           2) gt_box: (list) ground truth of normalized bounding box coordinates, sized [#box, 4].
           3) gt_id:  (list) ground truth of labeled bounding, sized [#box].  
         """
         img_id = self.ids[index]
         img = self.pull_image(img_id)
-        h, w, _ = img.shape
-        img = cv2.resize(img, (300, 300)).astype(np.float32)
-        img -= self.mean
-        img = torch.from_numpy(img).permute(2, 0, 1)
-        
-        gt_box, gt_id = self.pull_annotation(img_id, w, h)
+        gt_box, gt_id = self.pull_annotation(img_id)
     
-        if self.transform is True:
-            pass
+        if self.transform is not None:
+            img, gt_box, gt_id = self.transform(img, gt_box, gt_id)
         
         return img, gt_box, gt_id
 
@@ -140,8 +119,7 @@ class VOCDataBase():
         img_id = self.ids[index]
         img = self.pull_image(img_id)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        h, w, _ = img.shape
-        gt_box, gt_id = self.pull_annotation(img_id, w, h)
+        gt_box, gt_id = self.pull_annotation(img_id)
 
         plt.figure(figsize=(10, 10))
         colors = plt.cm.gnuplot2(np.linspace(0, 1, 21)).tolist()
@@ -149,10 +127,10 @@ class VOCDataBase():
         currentAxis = plt.gca()
         
         for box, id_ in zip(gt_box, gt_id):
-            x_min = box[0] * w
-            y_min = box[1] * h
-            width = box[2] * w - x_min 
-            height = box[3] * h - y_min 
+            x_min = box[0]
+            y_min = box[1]
+            width = box[2] - x_min 
+            height = box[3] - y_min 
             color = colors[id_]
             display_txt = 'Id: %d, %s'%(id_, VOC_CLASSES_ID_TO_LABEL[int(id_)])
             currentAxis.add_patch(plt.Rectangle([x_min, y_min], width, height, fill=False, edgecolor=color, linewidth=2))
@@ -179,8 +157,8 @@ class VOCDataBase():
         for box, score, id_ in zip(pred_loc, pred_score, pred_id):
             x_min = box[0] * w
             y_min = box[1] * h
-            width = box[2] * w - x_min 
-            height = box[3] * h - y_min 
+            width = box[2] * w - x_min
+            height = box[3] * h - y_min
             color = colors[id_]
             label = VOC_CLASSES_ID_TO_LABEL[int(id_)]
             display_txt = 'Id: %d, %s, Score: %.2f'%(id_, label, score)
