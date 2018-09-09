@@ -22,6 +22,10 @@ class L2Norm(nn.Module):
 
 
 class SSD(nn.Module):
+    """Implementation of Single Shot MultiBox Object Detector.
+    Arguments:
+      pre_train_vgg16: Pre-training VGG16 model. Please see the reference on the github page.
+    """
     def __init__(self, pre_train_vgg16=None):
         super(SSD, self).__init__()
         self.num_class = DATASET_CONFIG['num_classes']

@@ -5,6 +5,8 @@ from config import VOC_CLASSES_LABEL_TO_ID
 from config import DATASET_CONFIG
 
 class MultiboxLoss(nn.Module):
+    """Compute multibox loss. Please see self.forward() for more detail.
+    """
     def __init__(self):
         super(MultiboxLoss, self).__init__()
         # the function returns a loss per batch element
@@ -13,7 +15,7 @@ class MultiboxLoss(nn.Module):
         self.L1_loss = torch.nn.L1Loss(size_average = False)
     
     def forward(self, pred_loc, pred_clf, target_loc, target_cls): 
-        '''Compute multibox loss. For regression loss, only possitive matches are involved.
+        """Compute multibox loss. For regression loss, only possitive matches are involved.
            For classification loss, hard negative mining is used.
         Args:
           1)pred_loc: (tensor) the prediciton of bounding boxes, sized (#batch, 8723, 4).
@@ -23,7 +25,7 @@ class MultiboxLoss(nn.Module):
         Return:
           1)loss_for_cls: (tensor) CrossEntropyLoss for classification.
           2)loss_for_loc: (tensor) L1Loss for regression.
-        '''
+        """
         # a mask for positive matches, sized (batch, 8723, 1)
         pos_matches = (target_cls != VOC_CLASSES_LABEL_TO_ID['background'])
         # a mask for negative matches, sized (batch, 8723, 1)

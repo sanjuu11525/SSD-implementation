@@ -13,7 +13,6 @@ class Compose(object):
     Example:
     >>> Compose([[RandomCrop(300), RandomHorizontalFlip(), NormalizeBoundingBox(), Resize(300)])
     """
-
     def __init__(self, transforms):
         self.transforms = transforms
 

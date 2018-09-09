@@ -7,6 +7,9 @@ from config import VOC_CLASSES_LABEL_TO_ID
 from config import DATASET_CONFIG
 
 class DataCoder():
+    """Code/Decode data for traingin and evaluation respectively. Frequent used algorithms for bounding box
+    calculations are included.
+    """
     def __init__(self):
         self.default_box = self.defaultBox()
         self.variance = [0.1, 0.2]
@@ -226,5 +229,4 @@ class DataCoder():
         # output targets of the location and classification    
         batch_target_loc = torch.stack(batch_target_loc, 0) 
         batch_target_cls = torch.stack(batch_target_cls, 0)
-
         return batch_target_loc, batch_target_cls

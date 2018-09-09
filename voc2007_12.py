@@ -12,20 +12,23 @@ else:
     import xml.etree.ElementTree as ET
     
 class VOCDataBase():
+    """Data container for Pascal VOC dataset. All images, annotations are handled in this class. 
+    The augmentation pipeline is associated by a parameter set.
+    Arguments:
+      parameter: Parameter set for dataset configuration and augmented data.
+    """
     def __init__(self, parameter):
-        
         root = parameter['root']
         image_set = parameter['image_set']
+        year = parameter['year']
+        dataset = 'VOC' + year
         self.transform = parameter['transforms']
         self.keep_difficult = parameter['keep_difficult']
-        year = parameter['year']
-        
-        self.ids = []
-        dataset = 'VOC' + year
         self._annopath = os.path.join(root, dataset, 'Annotations', '%s.xml')
         self._imgpath = os.path.join(root, dataset, 'JPEGImages', '%s.jpg')
 
         imgsetpath = os.path.join(root, dataset, 'ImageSets', 'Main', '%s.txt')
+        self.ids = []
         for line in open(imgsetpath % image_set):
             self.ids.append(line.strip())
 
@@ -54,12 +57,13 @@ class VOCDataBase():
                 cur_pt = int(bbox.find(pt).text) - 1
                 bndbox.append(cur_pt)
             label_idx = VOC_CLASSES_LABEL_TO_ID[name]
-            bndbox.append(label_idx) # [xmin, ymin, xmax, ymax, label_ind]
+            # [xmin, ymin, xmax, ymax, label_ind]
+            bndbox.append(label_idx)
             res += [bndbox]  
 
         return res
     def pull_image(self, image_id):
-        """Pull annotation and normalized by image size.
+        """Fetch image with BGR format by OpenCV i/o.
         Arguments:
           image_id: scalar.
         Return:
@@ -69,14 +73,12 @@ class VOCDataBase():
         
         return img
     def pull_annotation(self, image_id):
-        """Pull annotation and normalized by image size.
+        """Fetch annotation by xml parser.
         Arguments:
           image_id: scalar.
-          w: image width
-          h: image height
         Return:
           1) gt_box: (list) ground truth of normalized bounding box coordinates, sized [#box, 4].
-          2) gt_id:  (list) ground truth of labeled bounding, sized [#box].  
+          2) gt_id: (list) ground truth of labeled bounding, sized [#box].  
         """
         ground_truth_root = ET.parse(self._annopath % image_id).getroot()
         ground_truth = self.getAnnotations(ground_truth_root)
@@ -95,9 +97,9 @@ class VOCDataBase():
         Arguments:
           index: scalar.
         Return:
-          1) img:    (torch) image, sized [3, 300, 300].
+          1) img: (torch) image, sized [3, 300, 300].
           2) gt_box: (list) ground truth of normalized bounding box coordinates, sized [#box, 4].
-          3) gt_id:  (list) ground truth of labeled bounding, sized [#box].  
+          3) gt_id: (list) ground truth of labeled bounding, sized [#box].  
         """
         img_id = self.ids[index]
         img = self.pull_image(img_id)
@@ -140,9 +142,9 @@ class VOCDataBase():
         """Visualize the image with predictions.
         Arguments:
           index: (scalar).
-          pred_loc:   (list), predicted bbox locations.
+          pred_loc: (list), predicted bbox locations.
           pred_score: (list), predicted scores.
-          pred_id:    (list), predicted id of objets.
+          pred_id: (list), predicted id of objets.
         """
         img_id = self.ids[index]
         img = self.pull_image(img_id)
