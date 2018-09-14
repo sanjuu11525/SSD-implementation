@@ -70,7 +70,7 @@ class RandomCrop(object):
     def get_params(self, img, output_size):
         """Get parameters for ``crop`` for a random crop.
         Args:
-            img (PIL Image): Image to be cropped.
+            img (numpy.ndarray): Image for info of size.
             output_size (tuple): Expected output size of the crop.
         Returns:
             tuple: params (i, j, h, w) patch of image after cropping randomly.
