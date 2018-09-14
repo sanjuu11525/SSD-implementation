@@ -28,7 +28,7 @@ class VOCDataBase():
 
         self.ids = []
         self._annopath = []
-        self._imgpath = []         
+        self._imgpath = []
         for year in year_set:
             dataset = 'VOC' + year
             imgsetpath = os.path.join(root, dataset, 'ImageSets', 'Main', '%s.txt')
