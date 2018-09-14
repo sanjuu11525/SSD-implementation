@@ -36,8 +36,6 @@ class VOCDataBase():
                 self.ids.append(line.strip())
                 self._annopath.append(os.path.join(root, dataset, 'Annotations', '%s.xml'))
                 self._imgpath.append(os.path.join(root, dataset, 'JPEGImages', '%s.jpg'))
-
-        print(imgsetpath % image_set)
   
     def getAnnotations(self, target):
         """Receive annotations from annotation files per image.
@@ -106,7 +104,6 @@ class VOCDataBase():
           2) gt_box: (list) ground truth of normalized bounding box coordinates, sized [#box, 4].
           3) gt_id: (list) ground truth of labeled bounding, sized [#box].  
         """
-#         img_id = self.ids[index]
         img = self.pull_image(index)
         gt_box, gt_id = self.pull_annotation(index)
     
