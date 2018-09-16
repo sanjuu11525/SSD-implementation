@@ -24,6 +24,7 @@ class Trainer():
 
         num_iter = 0      
         for epoch in range(self.n_epoch + 1):
+	    print("epoch:{}".format(epoch))
             if self.milestones is not None:
                 self.scheduler.step()
                 
@@ -40,9 +41,9 @@ class Trainer():
                 self.optimizer.step()
                 num_iter = num_iter + 1
                 
-                if it % 10 == 0:
+                if it % 20 == 0:
                     loss_total.append(loss.data.cpu().numpy())
                     loss_conf_out.append(loss_conf.data.cpu().numpy())
                     loss_loc_out.append(loss_loc.data.cpu().numpy())
-                if it % 150 == 0:
+                if it % 400 == 0:
                     print('Iteration:{}, loss_total:{}, loss_conf:{}, loss_loc:{}'.format(num_iter, loss.cpu().data.numpy(), loss_conf.cpu().data.numpy(), loss_loc.cpu().data.numpy()))
