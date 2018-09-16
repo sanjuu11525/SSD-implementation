@@ -1,4 +1,6 @@
 from eval_utility import *
+from torch.autograd import Variable
+from data_coder import DataCoder
 import torch.nn.functional as F
 
 class Evaluation():
