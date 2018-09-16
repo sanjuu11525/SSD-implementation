@@ -21,8 +21,6 @@ class VOCDataBase():
         root = parameter['root']
         image_set = parameter['image_set']
         year_set = parameter['years']
-        if year_set[0] == year_set[1]:
-            raise ValueError('Duplicate yeara in the parameter set')
         self.transform = parameter['transforms']
         self.keep_difficult = parameter['keep_difficult']
 
