@@ -326,6 +326,7 @@ class RandomHue(object):
     def __init__(self, delta=18.0, p=0.5):
         assert delta >= 0.0 and delta <= 360.0
         self.delta = delta
+        self.p = p
 
     def __call__(self, img, boxes=None, labels=None):
         """
@@ -376,3 +377,130 @@ class ConvertColorFormat(object):
 	return img, boxes, labels
     def __repr__(self):
         return self.__class__.__name__ + '(current={0}, transform={1})'.format(self.current, self.transform)
+
+class RandomBrightness(object):
+    """Tune the brightness of input image(numpy.ndarray).
+    Args:
+        delta (float): The delta for tuning brightness. Default value is 32.
+        p (float): Probability of the image being tuned. Default value is 0.5.
+    """
+    def __init__(self, delta=32, p=0.5):
+        assert delta >= 0.0
+        assert delta <= 255.0
+        self.delta = delta
+        self.p = p
+
+    def __call__(self, img, boxes=None, labels=None):
+        """
+        Args:
+            img (numpy.ndarray): Image to be tuned.
+            boxes: Bounding boxes of the image to be normalized.
+            labels: Labels of bounding boxes.
+        Returns:
+            img: tuned image.
+            boxes: No operation.
+            labels: No operation.
+	"""
+        if random.random() < self.p:
+            delta = random.uniform(-self.delta, self.delta)
+            img += delta
+        return img, boxes, labels
+    def __repr__(self):
+        return self.__class__.__name__ + '(delta={0}, p={1})'.format(self.delta, self.p)
+
+class SwapChannels(object):
+    """Transforms a tensorized image by swapping the channels in the order specified in the swap tuple.
+    Args:
+        swaps (int triple): final order of channels
+            eg: (2, 1, 0)
+    Reference:
+        https://github.com/amdegroot/ssd.pytorch
+    """
+
+    def __init__(self, swaps):
+        self.swaps = swaps
+
+    def __call__(self, image):
+        """
+        Args:
+            image (Tensor): image tensor to be transformed
+        Return:
+            a tensor with channels swapped according to swap
+        """
+        # if torch.is_tensor(image):
+        #     image = image.data.cpu().numpy()
+        # else:
+        #     image = np.array(image)
+        image = image[:, :, self.swaps]
+        return image
+
+class RandomLightingNoise(object):
+    """Tune the lightness of input image(numpy.ndarray).
+    Args:
+        p (float): Probability of the image being tuned. Default value is 0.5.
+    """
+    def __init__(self, p=0.5):
+        self.perms = ((0, 1, 2), (0, 2, 1),
+                      (1, 0, 2), (1, 2, 0),
+                      (2, 0, 1), (2, 1, 0))
+        self.p = p
+
+    def __call__(self, img, boxes=None, labels=None):
+        """
+        Args:
+            img (numpy.ndarray): Image to be tuned.
+            boxes: Bounding boxes of the image to be normalized.
+            labels: Labels of bounding boxes.
+        Returns:
+            img: tuned image.
+            boxes: No operation.
+            labels: No operation.
+	"""
+        if random.random() < self.p:
+            swap = self.perms[np.random.randint(len(self.perms))]
+            shuffle = SwapChannels(swap)  # shuffle channels
+            img = shuffle(img)
+        return img, boxes, labels
+    def __repr__(self):
+        return self.__class__.__name__ + '(p={})'.format(self.p)
+
+class PhotometricDistort(object):
+    """A pipeline contains several transformations of input image(numpy.ndarray).
+    Reference:
+        https://github.com/amdegroot/ssd.pytorch
+    """
+    def __init__(self):
+        self.pipeline = [RandomContrast(),
+                         ConvertColorFormat(transform='HSV'),
+                         RandomSaturation(), RandomHue(),
+                         ConvertColorFormat(current='HSV', transform='BGR'),
+                         RandomContrast()]
+        self.rand_brightness = RandomBrightness()
+        self.rand_light_noise = RandomLightingNoise()
+
+    def __call__(self, img, boxes, labels):
+        """
+        Args:
+            img (numpy.ndarray): Image to be transformed by the pipeline.
+            boxes: Bounding boxes of the image to be normalized.
+            labels: Labels of bounding boxes.
+        Returns:
+            img: transformed image.
+            boxes: No operation.
+            labels: No operation.
+	"""
+        im = img.copy()
+        im, boxes, labels = self.rand_brightness(im, boxes, labels)
+        if random.random() < 0.5:
+            distortion = Compose(self.pipeline[:-1])
+        else:
+            distortion = Compose(self.pipeline[1:])
+        im, boxes, labels = distortion(im, boxes, labels)
+        return self.rand_light_noise(im, boxes, labels)
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        for t in self.pipeline:
+            format_string += '\n'
+            format_string += '    {0}'.format(t)
+        format_string += '\n)'
+        return format_string
