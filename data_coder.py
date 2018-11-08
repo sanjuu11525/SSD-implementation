@@ -7,7 +7,7 @@ from config import VOC_CLASSES_LABEL_TO_ID
 from config import DATASET_CONFIG
 
 class DataCoder():
-    """Code/Decode data for traingin and evaluation respectively. Frequent used algorithms for bounding box
+    """Code/Decode data for training and evaluation respectively. Frequently used algorithms for bounding box
     calculations are included.
     """
     def __init__(self):
